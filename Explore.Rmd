@@ -1,0 +1,61 @@
+---
+title: "Explore data"
+output: html_document
+---
+## Load data & scripts
+
+```{r, message=FALSE}
+setwd('~/Desktop/Prudential')
+source("Load.R")
+source("ggplot_missing.R")
+```
+
+## Look at variables
+
+```{r}
+# look at variables
+str(train)
+```
+
+__What I found:__
+
+* Most variables (`int` columns) are categorical encoded as integers
+* A few are numerical like `BMI` and `weight`
+* `Product_Info_2` is a string column
+
+## Look at missing data
+
+__Plot missing data__
+
+```{r}
+ggplot_missing(train)
+```
+
+__These are variables with missing data__
+
+```{r}
+countMissingData <- function(column) {
+  return (sum(is.na(column)))
+}
+missing_data <- apply(train[, -1], 2, countMissingData)
+missing_data[missing_data > 0]
+```
+
+TODO
+
+* Remove them or fill in missing data
+
+__Remove these variables that have lots of missing data:__
+
+```{r}
+missing_data[missing_data > 15000]
+remove_these <- names(missing_data[missing_data > 15000])
+```
+
+__Fill in missing data for these variables:__
+
+```{r}
+fill_in_these <- missing_data[missing_data > 0 & missing_data < 15000]
+fill_in_these <- names( missing_data[missing_data > 0 & missing_data < 15000] )
+apply(train[, fill_in_these], 2, summary)
+```
