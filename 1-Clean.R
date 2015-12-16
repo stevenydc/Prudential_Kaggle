@@ -1,13 +1,11 @@
 setwd('~/Desktop/Prudential')
-source("Libraries.R")
-source("Load.R")
+source("0-Load Data.R")
 
 # remove these variables that have lots of missing data
 countMissingData <- function(column) {
   return (sum(is.na(column)))
 }
 missing_data <- apply(train[, -1], 2, countMissingData)
-missing_data[missing_data > 15000]
 remove_these <- names(missing_data[missing_data > 15000])
 train_less_na <- select(train, -one_of(remove_these)) # create a train set with much less missing data
 
@@ -19,4 +17,5 @@ for (column in fill_in_these) {
   train_less_na[missing, column] <- median(train_less_na[, column], na.rm = T)
 }
 
-apply(train_less_na[, -1], 2, countMissingData) # confirm no more missing data
+train_less_na$Response <- as.factor(train_less_na$Response)
+

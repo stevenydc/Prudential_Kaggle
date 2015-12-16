@@ -1,7 +1,7 @@
 setwd('~/Desktop/Prudential')
-source("Libraries.R")
+source("0-Load Libraries.R")
 
-## quadratic weighted kappa:
+## quadratic weighted kappa --------------------------------------------------
 weightedKappa <- function(actual, predicted, min_rating = 1, max_rating = 8) {
   # ensure pairs are valid
   if (length(actual) != length(predicted))
@@ -41,4 +41,23 @@ weightedKappa <- function(actual, predicted, min_rating = 1, max_rating = 8) {
   kappa <- 1 - (sum(weight_matrix * histogram_matrix) / sum(weight_matrix * expected_ratings_matrix))
   
   return (kappa)
+}
+
+## k fold cross evaluation ---------------------------------------------------
+
+crossEvaluate <- function(data, numFolds, modelFunction, formula, ...) {
+  folds <- createFolds(1:nrow(data), k = numFolds)
+  scores <- numeric(length = numFolds)
+  for (fold in seq_along(folds)) {
+    train_rows <- folds[[fold]]
+    test_rows <- unlist(folds[seq_along(folds) != fold]) %>% sort() %>% as.vector()
+    train <- data[train_rows, ]
+    test <- data[test_rows, ]
+    model <- modelFunction(formula = formula, data = train, ...)
+    pred <- predict(model, test, type = "response")
+    actual <- test[["Response"]]
+    scores[fold] <- weightedKappa(actual = actual, predicted = pred, min_rating = 1, max_rating = 8)
+    print("Complete once!"); print(scores[fold])
+  }
+  return (scores)
 }
